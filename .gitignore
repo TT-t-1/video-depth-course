@@ -226,3 +226,7 @@ __marimo__/
 *.pth
 *.pt
 *.zip
+
+/external/gmflow/output/
+
+/downloads/
