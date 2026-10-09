@@ -1,0 +1,370 @@
+{
+  "geometry_checks": {
+    "scale": "PASS",
+    "flip": "PASS",
+    "sampler": "PASS"
+  },
+  "pytorch": "1.13.0",
+  "device": "cuda",
+  "gpu": "NVIDIA GeForce RTX 3090",
+  "train_clips": 360,
+  "val_clips": 24,
+  "sequence_length": 12,
+  "train_val_frames_disjoint": true,
+  "batch_shapes": {
+    "image": [
+      2,
+      12,
+      3,
+      384,
+      384
+    ],
+    "depth": [
+      2,
+      12,
+      1,
+      384,
+      384
+    ],
+    "f_masks": [
+      2,
+      11,
+      1,
+      384,
+      384
+    ],
+    "b_masks": [
+      2,
+      11,
+      1,
+      384,
+      384
+    ],
+    "f_flows": [
+      2,
+      11,
+      2,
+      384,
+      384
+    ],
+    "b_flows": [
+      2,
+      11,
+      2,
+      384,
+      384
+    ]
+  },
+  "image_range": [
+    -1.0,
+    0.9968850612640381
+  ],
+  "inverse_depth_range": [
+    9.005763422464952e-05,
+    0.624984860420227
+  ],
+  "preview": {
+    "rgb_mae_before_alignment": 0.03684896230697632,
+    "rgb_mae_after_alignment": 0.011969695799052715,
+    "usable_pixel_ratio": 0.9671630859375,
+    "note": "RGB alignment diagnostic only; this is not a depth prediction score."
+  },
+  "file_audit": {
+    "sequences": [
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P000",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P001",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P002",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P003",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P004",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P005",
+        "rgb_frames": 1007,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 807,
+        "flow_files": {
+          "f_flow": 1006,
+          "b_flow": 1006,
+          "f_mask": 1006,
+          "b_mask": 1006
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P006",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P007",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P008",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P009",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P010",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "abandonedfactory/Hard/abandonedfactory/abandonedfactory/Hard/P011",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "carwelding/Hard/carwelding/carwelding/Hard/P000",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "carwelding/Hard/carwelding/carwelding/Hard/P001",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "carwelding/Hard/carwelding/carwelding/Hard/P002",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "carwelding/Hard/carwelding/carwelding/Hard/P003",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "office/Hard/office/office/Hard/P000",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "office/Hard/office/office/Hard/P001",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "office/Hard/office/office/Hard/P002",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "office/Hard/office/office/Hard/P003",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "office/Hard/office/office/Hard/P004",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "office/Hard/office/office/Hard/P005",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "office/Hard/office/office/Hard/P006",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      },
+      {
+        "sequence": "office/Hard/office/office/Hard/P007",
+        "rgb_frames": 200,
+        "matched_depth_frames": 200,
+        "unlabeled_rgb_frames": 0,
+        "flow_files": {
+          "f_flow": 199,
+          "b_flow": 199,
+          "f_mask": 199,
+          "b_mask": 199
+        }
+      }
+    ],
+    "sequence_count": 24,
+    "rgb_frames": 5607,
+    "matched_depth_frames": 4800,
+    "unlabeled_rgb_frames": 807,
+    "adjacent_pairs": 5583,
+    "generated_files": 22332
+  }
+}

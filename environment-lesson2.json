@@ -1,0 +1,16 @@
+{
+  "python": "3.10.8",
+  "packages": {
+    "torch": "1.13.0",
+    "torchvision": "0.14.0",
+    "numpy": "1.26.4",
+    "opencv-python-headless": "5.0.0.93",
+    "Pillow": "12.2.0",
+    "matplotlib": "3.7.2",
+    "tensorboard": "2.21.0",
+    "tqdm": "4.70.1"
+  },
+  "pytorch_cuda_runtime": "11.7",
+  "conda_environment": "vita",
+  "gpu": "NVIDIA GeForce RTX 3090"
+}

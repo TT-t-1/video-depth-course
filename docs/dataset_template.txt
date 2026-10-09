@@ -1,0 +1,367 @@
+#!/usr/bin/env python
+# encoding: utf-8
+
+import os
+import sys
+os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1"
+import cv2
+import numpy as np
+import math
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+from PIL import Image
+import Augmentor
+import glob
+import random
+import albumentations as A
+
+import torch
+from torch.utils.data import Dataset, DataLoader
+from torch.utils.data.distributed import DistributedSampler
+from torch.utils.data import Sampler
+import torch.distributed as dist
+
+# Check for endianness, based on Daniel Scharstein's optical flow code.
+# Using little-endian architecture, these two should be equal.
+TAG_FLOAT = 202021.25
+
+class RandomScale:
+    """随机缩放数据增强类
+    
+    功能：对输入数据进行随机缩放，并调整相应的深度和光流值
+    """
+    def __init__(self, scale_limit, last_ch):
+        self.scale_limit = scale_limit  # 缩放范围，如(0.8, 0.85)
+        self.last_ch = last_ch  # 最后几个通道数，用于特殊处理
+
+    def __call__(self, x):
+        # 学生任务1：实现随机缩放功能
+        # 步骤：
+        # 1. 使用np.random.uniform在scale_limit范围内生成随机缩放因子
+        # 2. 使用cv2.resize对输入x进行缩放，使用双线性插值
+        # 3. 对最后last_ch个通道的数据乘以缩放因子（这些是深度和光流信息）
+        # 提示：注意保持数据的一致性
+        
+        # 删除下面的代码，让学生实现
+
+        return x
+
+
+class RandomHorizontalFlip:
+    """随机水平翻转数据增强类
+    
+    功能：对输入数据进行随机水平翻转，并调整光流方向
+    """
+    def __init__(self, last_ch):
+        self.last_ch = last_ch
+
+    def __call__(self, x):
+        # 学生任务2：实现随机水平翻转功能
+        # 步骤：
+        # 1. 使用np.random.rand()生成0-1的随机数，如果大于0.5则进行翻转
+        # 2. 使用cv2.flip进行水平翻转（参数为1）
+        # 3. 调整光流数据的方向（x方向分量需要取反）
+        # 提示：last_ch表示最后几个通道，其中包含光流信息
+        
+        # 删除下面的代码，让学生实现
+        if np.random.rand() > 0.5:
+           
+        return x
+
+
+class DepthVideoDataset(Dataset):
+    """深度视频数据集类
+    
+    功能：读取包含图像、深度图、光流等信息的视频序列数据
+    用于训练单目视频深度估计模型
+    """
+    def __init__(self, mode, data_dirs=None, crop_size=384, seq_len=12):
+        """
+        参数:
+            mode: 数据集模式 ('train' 或 'val')
+            data_dirs: 数据目录列表
+            crop_size: 随机裁剪尺寸
+            seq_len: 序列长度（帧数）
+        """
+        if data_dirs is None:
+            data_dirs = ['/media/hdd1/kxian/data/depth/TartanAir']
+        elif isinstance(data_dirs, str):
+            data_dirs = [data_dirs]
+        self.mode = mode
+        self.crop_size = crop_size
+        self.seq_len = seq_len
+
+        print(data_dirs)
+        self.data_paths = []
+
+        # 学生任务3：实现数据路径加载逻辑
+        # 要求：遍历所有数据目录，为每个视频序列创建数据路径列表
+        # 每个序列应包含seq_len帧，每帧包含：
+        # - 图像路径、深度图路径、前向光流路径、后向光流路径、前向掩码路径、后向掩码路径
+        # 注意：序列的第一帧没有后向光流，最后一帧没有前向光流
+        
+        # 这里已提供TartanAir数据集的加载逻辑作为参考
+        # 学生需要理解这个逻辑并能够解释每一行代码的作用
+        for data_dir in data_dirs:
+            if 'TartanAir' in data_dir:
+                scene_paths = sorted(glob.glob(data_dir + '/*/*/*/*/*/*'))
+                for scene_path in scene_paths:
+                    image_names = sorted(os.listdir(os.path.join(scene_path, 'image_left')))
+                    depth_names = sorted(os.listdir(os.path.join(scene_path, 'depth_left')))
+                    assert len(image_names) == len(depth_names)
+                    image_num = len(image_names)
+                    seq_num = image_num // seq_len
+                    if mode == 'train':
+                        start_idx = 0
+                        end_idx = min(50, seq_num - 1)
+                    else:
+                        start_idx = seq_num - 1
+                        end_idx = seq_num
+                    for i in range(start_idx, end_idx):
+                        set_paths = []
+                        for j in range(seq_len):
+                            image_path = os.path.join(scene_path, 'image_left', image_names[i * seq_len + j])
+                            depth_path = os.path.join(scene_path, 'depth_left', depth_names[i * seq_len + j])
+                            f_flow_path = image_path.replace('TartanAir', 'TartanAir_flow').replace('image_left', 'f_flow').replace('.png', '.npy')
+                            b_flow_path = os.path.join(scene_path.replace('TartanAir', 'TartanAir_flow'), 'b_flow', image_names[i * seq_len + j-1].replace('.png', '.npy'))
+                            f_mask_path = image_path.replace('TartanAir', 'TartanAir_flow').replace('image_left', 'f_mask').replace('.png', '.npy')
+                            b_mask_path = os.path.join(scene_path.replace('TartanAir', 'TartanAir_flow'), 'b_mask', image_names[i * seq_len + j-1].replace('.png', '.npy'))
+                            if j == 0:
+                                b_flow_path = None
+                                b_mask_path = None
+                            elif j == seq_len - 1:
+                                f_flow_path = None
+                                f_mask_path = None
+                            set_paths.append([image_path, depth_path, f_flow_path, b_flow_path, f_mask_path, b_mask_path])
+                        self.data_paths.append(['TartanAir', set_paths])
+
+        # 数据增强变换
+        self.scale = {
+            'TartanAir': RandomScale(scale_limit=(0.8, 0.85), last_ch=4*(seq_len-1)),
+        }
+
+        self.flip = {
+            'TartanAir': RandomHorizontalFlip(last_ch=4*(seq_len-1)),
+        }
+
+        self.transform = {
+            'TartanAir':
+                A.Compose([
+                    A.RandomCrop(height=crop_size, width=crop_size),
+                    A.ToFloat()
+                ])
+        }
+
+    def __getitem__(self, item):
+        """获取数据样本
+        
+        功能：根据索引读取并处理单个数据样本
+        返回包含图像序列、深度序列、光流等信息的字典
+        """
+        label, set_paths = self.data_paths[item]
+        images = []
+        depths = []
+        f_flows = []
+        b_flows = []
+        f_masks = []
+        b_masks = []
+
+        # 学生任务4：实现数据读取和预处理
+        # 要求：遍历序列中的每一帧，完成以下操作：
+        # 1. 读取图像并进行预处理（归一化到[-1,1]）
+        # 2. 读取深度图并转换为视差
+        # 3. 读取和处理光流数据（调整尺寸和缩放）
+        # 4. 读取和处理掩码数据
+        
+        # 这里已提供完整实现作为参考
+        # 学生需要理解每个处理步骤的目的和原理
+        for image_path, depth_path, f_flow_path, b_flow_path, f_mask_path, b_mask_path in set_paths:
+            # 读取和预处理图像
+            image = cv2.imread(image_path).astype(np.float32) / 255
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            image = (image - 0.5) * 2  # 归一化到[-1, 1]
+            
+            # 读取和预处理深度图
+            if label == 'TartanAir':
+                depth = np.load(depth_path).astype(np.float32)[..., None]
+                depth = 1 / depth  # 将深度转换为视差
+            
+            # 处理前向光流和掩码
+            if f_flow_path is None:
+                f_flow = np.zeros((image.shape[0], image.shape[1], 0)).astype(np.float32)
+                f_mask = np.zeros((image.shape[0], image.shape[1], 0)).astype(np.float32)
+            else:
+                f_flow = np.load(f_flow_path).astype(np.float32)
+                f_mask = np.load(f_mask_path).astype(np.float32)
+                f_mask = 1 - f_mask  # 反转掩码
+                # 调整光流和掩码尺寸
+                scale = image.shape[1] / f_flow.shape[1]
+                f_flow = scale * cv2.resize(f_flow, dsize=(image.shape[1], image.shape[0]), interpolation=cv2.INTER_LINEAR)
+                f_mask = cv2.resize(f_mask, dsize=(image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)[..., None]
+            
+            # 处理后向光流和掩码（类似前向处理）
+            if b_flow_path is None:
+                b_flow = np.zeros((image.shape[0], image.shape[1], 0)).astype(np.float32)
+                b_mask = np.zeros((image.shape[0], image.shape[1], 0)).astype(np.float32)
+            else:
+                b_flow = np.load(b_flow_path).astype(np.float32)
+                b_mask = np.load(b_mask_path).astype(np.float32)
+                b_mask = 1 - b_mask
+                scale = image.shape[1] / b_flow.shape[1]
+                b_flow = scale * cv2.resize(b_flow, dsize=(image.shape[1], image.shape[0]), interpolation=cv2.INTER_LINEAR)
+                b_mask = cv2.resize(b_mask, dsize=(image.shape[1], image.shape[0]), interpolation=cv2.INTER_NEAREST)[..., None]
+            
+            images.append(image)
+            depths.append(depth)
+            f_flows.append(f_flow)
+            b_flows.append(b_flow)
+            f_masks.append(f_mask)
+            b_masks.append(b_mask)
+
+        # 将所有数据拼接成大张量
+        images = np.concatenate(images, axis=-1)  # H, W, 3T
+        depths = np.concatenate(depths, axis=-1)  # H, W, T
+        f_flows = np.concatenate(f_flows, axis=-1)  # H, W, 2(T-1)
+        b_flows = np.concatenate(b_flows, axis=-1)  # H, W, 2(T-1)
+        f_masks = np.concatenate(f_masks, axis=-1)  # H, W, T-1
+        b_masks = np.concatenate(b_masks, axis=-1)  # H, W, T-1
+        
+        # 拼接所有通道用于数据增强
+        all = np.concatenate((images, depths, f_masks, b_masks, f_flows, b_flows), axis=-1)
+        
+        # 应用数据增强
+        all = self.scale[label](all)
+        # all = self.flip[label](all)  # 可选：启用翻转增强
+        all = self.transform[label](image=all)['image']
+        
+        # 学生任务5：实现通道分割逻辑
+        # 要求：按照拼接时的顺序，将各个数据从大张量中分离出来
+        # 通道顺序：图像(3T) -> 深度(T) -> 前向掩码(T-1) -> 后向掩码(T-1) -> 前向光流(2(T-1)) -> 后向光流(2(T-1))
+        # 提示：使用切片操作，注意计算每个数据的起始和结束位置
+        
+        # 删除下面的代码，让学生实现
+
+        
+        # 将通道维度转换为序列维度
+        images = np.stack(np.split(images, self.seq_len, axis=-1), axis=0)
+        depths = np.stack(np.split(depths, self.seq_len, axis=-1), axis=0)
+        f_masks = np.stack(np.split(f_masks, self.seq_len-1, axis=-1), axis=0)
+        b_masks = np.stack(np.split(b_masks, self.seq_len-1, axis=-1), axis=0)
+        f_flows = np.stack(np.split(f_flows, self.seq_len-1, axis=-1), axis=0)
+        b_flows = np.stack(np.split(b_flows, self.seq_len-1, axis=-1), axis=0)
+
+        # 转换为PyTorch张量并调整维度顺序
+        images = torch.from_numpy(images).permute(0, 3, 1, 2)
+        depths = torch.from_numpy(depths).permute(0, 3, 1, 2)
+        f_flows = torch.from_numpy(f_flows).permute(0, 3, 1, 2)
+        b_flows = torch.from_numpy(b_flows).permute(0, 3, 1, 2)
+        f_masks = torch.from_numpy(f_masks).permute(0, 3, 1, 2)
+        b_masks = torch.from_numpy(b_masks).permute(0, 3, 1, 2)
+
+        sample = {
+            'image': images,      # 图像序列 [T, 3, H, W]
+            'depth': depths,      # 深度序列 [T, 1, H, W] 
+            'f_flows': f_flows,   # 前向光流 [T-1, 2, H, W]
+            'b_flows': b_flows,   # 后向光流 [T-1, 2, H, W]
+            'f_masks': f_masks,   # 前向掩码 [T-1, 1, H, W]
+            'b_masks': b_masks,   # 后向掩码 [T-1, 1, H, W]
+        }
+
+        return sample
+
+    def __len__(self):
+        """返回数据集大小"""
+        return len(self.data_paths) // 4 * 4
+
+
+class DistributedSamplerNoEvenlyDivisible(Sampler):
+    """分布式采样器（支持不能被进程数整除的数据集大小）"""
+    
+    def __init__(self, dataset, num_replicas=None, rank=None, shuffle=True):
+        # 学生任务6：实现分布式采样器初始化
+        # 要求：设置分布式训练所需的参数
+        # 步骤：
+        # 1. 如果没有提供num_replicas和rank，从分布式环境中获取
+        # 2. 计算每个进程应该处理的数据样本数量
+        # 3. 处理数据集大小不能被进程数整除的情况
+        
+        
+        if num_replicas is None:
+            if not dist.is_available():
+                raise RuntimeError("Requires distributed package to be available")
+            num_replicas = dist.get_world_size()
+        if rank is None:
+            if not dist.is_available():
+                raise RuntimeError("Requires distributed package to be available")
+            rank = dist.get_rank()
+        self.dataset = dataset
+        self.num_replicas = num_replicas
+        self.rank = rank
+        self.epoch = 0
+        # 删除下面两行代码，让学生实现
+
+
+
+        if self.rank < rest:
+            num_samples += 1
+        self.num_samples = num_samples
+        self.total_size = len(dataset)
+        self.shuffle = shuffle
+
+    def __iter__(self):
+        # 学生任务7：实现采样器迭代逻辑
+        # 要求：根据当前epoch生成数据索引，并按进程分配数据
+        # 步骤：
+        # 1. 根据epoch设置随机种子保证不同epoch的数据顺序不同
+        # 2. 生成数据索引列表（打乱或顺序）
+        # 3. 按进程rank分配对应的数据索引
+        
+        
+        g = torch.Generator()
+        g.manual_seed(self.epoch)
+        if self.shuffle:
+            # 删除下面一行代码，让学生实现
+            
+        else:
+            indices = list(range(len(self.dataset)))
+
+        # 删除下面一行代码，让学生实现
+        
+        self.num_samples = len(indices)
+
+        return iter(indices)
+
+    def __len__(self):
+        return self.num_samples
+
+    def set_epoch(self, epoch):
+        self.epoch = epoch
+
+
+if __name__ == '__main__':
+    """测试数据集类"""
+    # 创建验证集实例
+    dataset = DepthVideoDataset('val',
+                                data_dirs=['/media/hdd1/kxian/data/depth/TartanAir'],
+                                seq_len=4)
+    # 创建数据加载器
+    dataloader = DataLoader(dataset, batch_size=1, num_workers=4)
+
+    import os
+    os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+
+    import time
+    t2 = time.time()
+
+    # 测试数据加载
+    for sample_batch in dataloader:
+        t1 = time.time()
+        torch.cuda.synchronize()
+        print('数据预处理时间:', t1 - t2)
+
+        images = sample_batch['image'].cuda()
+        depths = sample_batch['depth'].cuda()
+
+        torch.cuda.synchronize()
+        t2 = time.time()
+        print('数据传输时间:', t2 - t1)
