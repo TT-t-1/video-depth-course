@@ -218,3 +218,11 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Course data, model weights and generated outputs
+/datasets/
+/checkpoints/
+/outputs/
+*.pth
+*.pt
+*.zip
